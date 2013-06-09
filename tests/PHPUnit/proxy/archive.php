@@ -34,5 +34,6 @@ $segments = Piwik_Common::json_decode($segmentsArg);
 Piwik_Config::getInstance()->Segments = $segments;
 
 // include archive.php, and let 'er rip
+define('PIWIK_ARCHIVE_CRON_TEST_MODE', true);
 require PIWIK_INCLUDE_PATH . '/misc/cron/archive.php';
 

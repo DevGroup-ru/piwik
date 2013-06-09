@@ -74,6 +74,24 @@ if (!defined('PIWIK_MODE_ARCHIVE')) {
 require_once PIWIK_INCLUDE_PATH . "/index.php";
 require_once PIWIK_INCLUDE_PATH . "/core/API/Request.php";
 
+if (defined('PIWIK_ARCHIVE_CRON_TEST_MODE')) {
+    class Piwik_FrontController_Test extends Piwik_FrontController
+    {
+        protected function createConfigObject()
+        {
+            // Config files forced to use the test database
+            Piwik::createConfigObject();
+            Piwik_Config::getInstance()->setTestEnvironment();
+        }
+
+        protected function createAccessObject()
+        {
+            parent::createAccessObject();
+            Piwik::setUserIsSuperUser(true);
+        }
+    }
+}
+
 try {
     $archiving = new Archiving;
     $archiving->init();
@@ -659,7 +677,12 @@ class Archiving
     private function initCore()
     {
         try {
-            Piwik_FrontController::getInstance()->init();
+            if (defined('PIWIK_ARCHIVE_CRON_TEST_MODE')) {
+                $controller = new Piwik_FrontController_Test();
+                $controller->init();
+            } else {
+                Piwik_FrontController::getInstance()->init();
+            }
         } catch (Exception $e) {
             echo "ERROR: During Piwik init, Message: " . $e->getMessage();
             exit;

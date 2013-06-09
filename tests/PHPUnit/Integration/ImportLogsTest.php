@@ -20,7 +20,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
      */
     public function testApi($api, $params)
     {
-        $this->runApiTests($api, $params);
+        //$this->runApiTests($api, $params);
     }
 
     public function getApiForTesting()
@@ -46,27 +46,27 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     {
         return array(
             'browserCode==IE',
-            'userCountry==JP',
-            'customVariableName1==HTTP-code'
+            'countryCode==JP',
+            'customVariableName1=='.urlencode('HTTP-code')
         );
     }
     
     public function getApiForCronTest()
     {
         $results = array();
-        $results[] = array('VisitsSummary.get', array('idSite'  => self::$fixture->idSite, // TODO: change to 'all'
+        $results[] = array('VisitsSummary.get', array('idSite'  => 'all',
                                                       'date'    => '2012-08-09',
                                                       'periods' => array('day', 'week', 'month', 'year')));
 
         foreach ($this->getSegmentsToPreArchive() as $idx => $segment) {
-            $results[] = array('VisitsSummary.get', array('idSite'     => self::$fixture->idSite,
+            $results[] = array('VisitsSummary.get', array('idSite'     => 'all',
                                                           'date'       => '2012-08-09',
                                                           'periods'    => array('day', 'week', 'month', 'year'),
                                                           'segment'    => $segment,
                                                           'testSuffix' => '_segment'.$idx));
         }
         
-        $results[] = array('VisitsSummary.get', array('idSite'     => self::$fixture->idSite,
+        $results[] = array('VisitsSummary.get', array('idSite'     => 'all',
                                                       'date'       => '2012-08-09',
                                                       'periods'    => array('day', 'week', 'month', 'year'),
                                                       'segment'    => 'browserCode==EP',
@@ -108,10 +108,6 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     }
     
     /**
-     Archive.php tests:
-In all tests, test:
- - segments
- - etc.
      * @dataProvider getArchivePhpCronOptionsToTest
      * @group        Integration
      * @group        ImportLogs
@@ -119,12 +115,17 @@ In all tests, test:
     public function testArchivePhpCron($optionGroupName, $archivePhpOptions)
     {
         self::deleteArchiveTables();
+        $this->setLastRunArchiveOptions();
         $this->runArchivePhpCron($archivePhpOptions);
-        Piwik_ArchiveProcessing::$forceDisableArchiving = true;
         
         foreach ($this->getApiForCronTest() as $testInfo) {
             list($api, $params) = $testInfo;
-            $params['testSuffix'] = '_' . $optionGroupName;
+            
+            if (!isset($params['testSuffix'])) {
+                $params['testSuffix'] = '';
+            }
+            $params['testSuffix'] .= '_archiveCron_' . $optionGroupName;
+            $params['disableArchiving'] = true;
             
             $this->runApiTests($api, $params);
         }
@@ -135,10 +136,26 @@ In all tests, test:
         return 'ImportLogs';
     }
     
+    private function setLastRunArchiveOptions()
+    {
+        $periodTypes = array('day', 'periods');
+        $idSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
+        
+        $time = Piwik_Date::factory(self::$fixture->dateTime)->subDay(1)->getTimestamp();
+        
+        foreach ($periodTypes as $period) {
+            foreach ($idSites as $idSite) {
+                $lastRunArchiveOption = "lastRunArchive" . $period . "_" . $idSite;
+                
+                Piwik_SetOption($lastRunArchiveOption, $time);
+            }
+        }
+    }
+    
     private function runArchivePhpCron($options)
     {
         $archivePhpScript = PIWIK_INCLUDE_PATH . '/tests/PHPUnit/proxy/archive.php';
-        $urlToProxy = Test_Piwik_BaseFixture::getRootUrl() . 'tests/PHPUnit/proxy/';
+        $urlToProxy = Test_Piwik_BaseFixture::getRootUrl() . 'tests/PHPUnit/proxy/index.php';
         
         $segments = addslashes(Piwik_Common::json_encode($this->getSegmentsToPreArchive()));
         
