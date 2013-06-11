@@ -30,8 +30,6 @@ if (strrpos($segmentsArg, '"') === strlen($segmentsArg) - 1) {
 
 $segments = Piwik_Common::json_decode($segmentsArg);
 
-// overwrite Segments array in config
-Piwik_Config::getInstance()->Segments = $segments;
 
 // include archive.php, and let 'er rip
 define('PIWIK_ARCHIVE_CRON_TEST_MODE', true);
