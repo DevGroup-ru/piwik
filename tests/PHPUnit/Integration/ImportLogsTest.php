@@ -17,9 +17,10 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     {
         IntegrationTestCase::setUpBeforeClass();
         
-        foreach (self::getSegmentsToPreArchive() as $idx => $segment) { // TODO: add one segment for just one site
+        foreach (self::getSegmentsToPreArchive() as $idx => $segment) {
+            $idSite = $idx == 0 ? self::$fixture->idSite : false; // for first segment only archive for first site
             Piwik_SegmentEditor_API::getInstance()->add(
-                'segment'.$idx, $segment, $idSite = false, $autoArchive = true, $enabledAllUsers = true);
+                'segment'.$idx, $segment, $idSite, $autoArchive = true, $enabledAllUsers = true);
         }
     }
     
@@ -62,7 +63,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     }
     
     public function getApiForCronTest()
-    {return array();
+    {
         $results = array();
         $results[] = array('VisitsSummary.get', array('idSite'  => 'all',
                                                       'date'    => '2012-08-09',
@@ -111,9 +112,9 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     {
         return array(
             array('noOptions', array()),
-            /*array('forceAllWebsites', array('--force-all-websites' => false)),
+            array('forceAllWebsites', array('--force-all-websites' => false)),
             array('forceAllPeriods_lastDay', array('--force-all-periods=86400')),
-            array('forceAllPeriods_allTime', array('--force-all-periods')),*/
+            array('forceAllPeriods_allTime', array('--force-all-periods')),
         );
     }
     
@@ -179,7 +180,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
         $cmd .= '2>&1';
         
         // run the command
-        exec($cmd, $output, $result);echo "OUTPUT: ".implode("\n", $output)."\n";
+        exec($cmd, $output, $result);
         if ($result !== 0) {
             throw new Exception("log importer failed: " . implode("\n", $output) . "\n\ncommand used: $cmd");
         }
