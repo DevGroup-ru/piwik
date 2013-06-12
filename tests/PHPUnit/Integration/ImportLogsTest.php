@@ -18,9 +18,20 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
         parent::setUpBeforeClass();
         
         foreach (self::getSegmentsToPreArchive() as $idx => $segment) {
-            $idSite = $idx == 0 ? self::$fixture->idSite : false; // for first segment only archive for first site
+            $idSite = false;
+            $autoArchive = true;
+            $enabledAllUsers = true;
+            
+            if ($idx == 0) {
+                $idSite = self::$fixture->idSite; // for first segment only archive for first site
+            } else if ($idx == 1) {
+                $autoArchive = false; // for second segment only archive for second site
+            } else if ($idx == 2) {
+                $enabledAllUsers = false; // for third segment enable for superuser only
+            }
+            
             Piwik_SegmentEditor_API::getInstance()->add(
-                'segment'.$idx, $segment, $idSite, $autoArchive = true, $enabledAllUsers = true);
+                'segment'.$idx, $segment, $idSite, $autoArchive, $enabledAllUsers);
         }
     }
     
@@ -57,7 +68,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     {
         return array(
             'browserCode==IE',
-            'countryCode==JP',
+            'customVariableName1==Not-bot',
             'customVariablePageName1=='.urlencode('HTTP-code')
         );
     }
