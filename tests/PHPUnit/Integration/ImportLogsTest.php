@@ -85,10 +85,49 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
         
         return $results;
     }
+    
+    public function getArchivePhpCronOptionsToTest()
+    {
+        return array(
+            array('noOptions', array()),
+            // segment archiving makes calling the script more than once impractical. if all 4 are
+            // called, this test can take up to 13min to complete.
+            /*array('forceAllWebsites', array('--force-all-websites' => false)),
+            array('forceAllPeriods_lastDay', array('--force-all-periods' => '86400')),
+            array('forceAllPeriods_allTime', array('--force-all-periods' => false)),*/
+        );
+    }
+    
+    /**
+     * @dataProvider getArchivePhpCronOptionsToTest
+     * @group        Integration
+     * @group        ImportLogs
+     */
+    public function testArchivePhpCron($optionGroupName, $archivePhpOptions)
+    {
+        self::deleteArchiveTables();
+        $this->setLastRunArchiveOptions();
+        $this->runArchivePhpCron($archivePhpOptions);
+        
+        foreach ($this->getApiForCronTest() as $testInfo) {
+            list($api, $params) = $testInfo;
+            
+            if (!isset($params['testSuffix'])) {
+                $params['testSuffix'] = '';
+            }
+            $params['testSuffix'] .= '_archiveCron_' . $optionGroupName;
+            $params['disableArchiving'] = true;
+            
+            $this->runApiTests($api, $params);
+        }
+    }
 
     /**
      * @group        Integration
      * @group        ImportLogs
+     * 
+     * NOTE: This test must be last since the new sites that get added are added in
+     *       random order.
      */
     public function testDynamicResolverSitesCreated()
     {
@@ -106,40 +145,6 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
 
         $whateverDotCom = Piwik_SitesManager_API::getInstance()->getSitesIdFromSiteUrl('http://whatever.com');
         $this->assertEquals(1, count($whateverDotCom));
-    }
-    
-    public function getArchivePhpCronOptionsToTest()
-    {
-        return array(
-            array('noOptions', array()),
-            /*array('forceAllWebsites', array('--force-all-websites' => false)),
-            array('forceAllPeriods_lastDay', array('--force-all-periods' => '86400')),
-            array('forceAllPeriods_allTime', array('--force-all-periods' => false)),*/
-        );
-    }
-    
-    /**
-     * @dataProvider getArchivePhpCronOptionsToTest
-     * @group        Integration
-     * @group        ImportLogs
-     */
-    public function testArchivePhpCron($optionGroupName, $archivePhpOptions)
-    {//echo "\nDATA: \n".print_r(Piwik_FetchAll("SELECT * FROM ".Piwik_Common::prefixTable('')), true)."\n";
-        self::deleteArchiveTables();
-        $this->setLastRunArchiveOptions();
-        $this->runArchivePhpCron($archivePhpOptions);
-        
-        foreach ($this->getApiForCronTest() as $testInfo) {
-            list($api, $params) = $testInfo;
-            
-            if (!isset($params['testSuffix'])) {
-                $params['testSuffix'] = '';
-            }
-            $params['testSuffix'] .= '_archiveCron_' . $optionGroupName;
-            $params['disableArchiving'] = true;
-            
-            $this->runApiTests($api, $params);
-        }
     }
 
     public function getOutputPrefix()

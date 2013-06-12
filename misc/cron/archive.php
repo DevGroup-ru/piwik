@@ -484,7 +484,7 @@ class Archiving
                     }
                     $visitsAllDaysInPeriod = @array_sum($stats);
                 }
-                curl_close($content);
+                curl_close($ch);
             }
         }
 
@@ -495,7 +495,7 @@ class Archiving
     }
 
     private function addCurlHandleToMulti(&$mh, $ch)
-    {return;
+    {
         if (!$mh) {
             $mh = curl_multi_init();
         }
