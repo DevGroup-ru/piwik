@@ -102,13 +102,6 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
             if (!is_array($data) || $data['nb_visits'] == 0) {
                 return $this->isThereSomeVisits = false;
             }
-            if ($this->site->getId() == 3) {
-              $fd = fopen('/home/runic/hello.txt', 'a');
-              fwrite($fd, "For '".$this->period->getPrettyString()."' & site ".$this->site->getId()." ".((int)$data['nb_visits'])." visits\n");
-              fwrite($fd, "  SQL: $sql\n");
-              fwrite($fd, "  BIND: ".implode(',', $bind)."\n");
-              fclose($fd);
-            }
 
             // visits found: set attribtues
             foreach ($data as $name => $value) {

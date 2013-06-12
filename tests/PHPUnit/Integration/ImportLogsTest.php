@@ -31,7 +31,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
      */
     public function testApi($api, $params)
     {
-        //$this->runApiTests($api, $params);
+        $this->runApiTests($api, $params);
     }
 
     public function getApiForTesting()

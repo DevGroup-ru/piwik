@@ -47,29 +47,12 @@ Ideas for improvements:
 	  it returns last temporary monthly report generated, if the last month haven't yet been processed / finalized
  */
 
-if (!defined('PIWIK_INCLUDE_PATH')) {
-    define('PIWIK_INCLUDE_PATH', realpath(dirname(__FILE__) . "/../.."));
-}
-
-if (!defined('PIWIK_USER_PATH')) {
-    define('PIWIK_USER_PATH', PIWIK_INCLUDE_PATH);
-}
-
-if (!defined('PIWIK_ENABLE_DISPATCH')) {
-    define('PIWIK_ENABLE_DISPATCH', false);
-}
-
-if (!defined('PIWIK_ENABLE_ERROR_HANDLER')) {
-    define('PIWIK_ENABLE_ERROR_HANDLER', false);
-}
-
-if (!defined('PIWIK_ENABLE_SESSION_START')) {
-    define('PIWIK_ENABLE_SESSION_START', false);
-}
-
-if (!defined('PIWIK_MODE_ARCHIVE')) {
-    define('PIWIK_MODE_ARCHIVE', true);
-}
+define('PIWIK_INCLUDE_PATH', realpath(dirname(__FILE__) . "/../.."));
+define('PIWIK_USER_PATH', PIWIK_INCLUDE_PATH);
+define('PIWIK_ENABLE_DISPATCH', false);
+define('PIWIK_ENABLE_ERROR_HANDLER', false);
+define('PIWIK_ENABLE_SESSION_START', false);
+define('PIWIK_MODE_ARCHIVE', true);
 
 require_once PIWIK_INCLUDE_PATH . "/index.php";
 require_once PIWIK_INCLUDE_PATH . "/core/API/Request.php";
@@ -605,7 +588,7 @@ class Archiving
     }
 
     private function logNetworkError($url, $response)
-    {echo "WHOLE RESPONSE: ".$response."\n";
+    {
         $message = "Got invalid response from API request: $url. ";
         if (empty($response)) {
             $message .= "The response was empty. This usually means a server error. This solution to this error is generally to increase the value of 'memory_limit' in your php.ini file. Please check your Web server Error Log file for more details.";
