@@ -15,7 +15,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
 
     public static function setUpBeforeClass()
     {
-        IntegrationTestCase::setUpBeforeClass();
+        parent::setUpBeforeClass();
         
         foreach (self::getSegmentsToPreArchive() as $idx => $segment) {
             $idSite = $idx == 0 ? self::$fixture->idSite : false; // for first segment only archive for first site
@@ -58,7 +58,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
         return array(
             'browserCode==IE',
             'countryCode==JP',
-            'customVariableName1=='.urlencode('HTTP-code')
+            'customVariablePageName1=='.urlencode('HTTP-code')
         );
     }
     
@@ -112,9 +112,9 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
     {
         return array(
             array('noOptions', array()),
-            array('forceAllWebsites', array('--force-all-websites' => false)),
-            array('forceAllPeriods_lastDay', array('--force-all-periods=86400')),
-            array('forceAllPeriods_allTime', array('--force-all-periods')),
+            /*array('forceAllWebsites', array('--force-all-websites' => false)),
+            array('forceAllPeriods_lastDay', array('--force-all-periods' => '86400')),
+            array('forceAllPeriods_allTime', array('--force-all-periods' => false)),*/
         );
     }
     
@@ -124,7 +124,7 @@ class Test_Piwik_Integration_ImportLogs extends IntegrationTestCase
      * @group        ImportLogs
      */
     public function testArchivePhpCron($optionGroupName, $archivePhpOptions)
-    {
+    {//echo "\nDATA: \n".print_r(Piwik_FetchAll("SELECT * FROM ".Piwik_Common::prefixTable('')), true)."\n";
         self::deleteArchiveTables();
         $this->setLastRunArchiveOptions();
         $this->runArchivePhpCron($archivePhpOptions);
