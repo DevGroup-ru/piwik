@@ -227,7 +227,7 @@ class Piwik_Referers extends Piwik_Plugin
         Piwik_AddWidget('Referers_Referers', 'Referers_WidgetCampaigns', 'Referers', 'getCampaigns');
         Piwik_AddWidget('Referers_Referers', 'Referers_WidgetOverview', 'Referers', 'getRefererType');
         Piwik_AddWidget('Referers_Referers', 'Referers_WidgetGetAll', 'Referers', 'getAll');
-        if (Piwik_Archive::isSegmentationEnabled()) {
+        if (Piwik::isSegmentationEnabled()) {
             Piwik_AddWidget('SEO', 'Referers_WidgetTopKeywordsForPages', 'Referers', 'getKeywordsForPage');
         }
     }
@@ -289,9 +289,9 @@ class Piwik_Referers extends Piwik_Plugin
      */
     public function archiveDay($notification)
     {
-        $archiveProcessing = $notification->getNotificationObject();
+        $archiveProcessor = $notification->getNotificationObject();
 
-        $archiving = new Piwik_Referers_Archiver($archiveProcessing);
+        $archiving = new Piwik_Referers_Archiver($archiveProcessor);
         if ($archiving->shouldArchive()) {
             $archiving->archiveDay();
         }
@@ -305,8 +305,8 @@ class Piwik_Referers extends Piwik_Plugin
      */
     function archivePeriod($notification)
     {
-        $archiveProcessing = $notification->getNotificationObject();
-        $archiving = new Piwik_Referers_Archiver($archiveProcessing);
+        $archiveProcessor = $notification->getNotificationObject();
+        $archiving = new Piwik_Referers_Archiver($archiveProcessor);
         if($archiving->shouldArchive()) {
             $archiving->archivePeriod();
         }

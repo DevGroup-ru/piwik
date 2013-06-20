@@ -269,6 +269,8 @@ class Piwik_API_API
         $segments = array();
         Piwik_PostEvent('API.getSegmentsMetadata', $segments, $idSites);
 
+        $isAuthenticatedWithViewAccess = Piwik::isUserHasViewAccess($idSites) && !Piwik::isUserIsAnonymous();
+
         $segments[] = array(
             'type'           => 'dimension',
             'category'       => Piwik_Translate('General_Visit'),
@@ -277,7 +279,7 @@ class Piwik_API_API
             'acceptedValues' => '13.54.122.1, etc.',
             'sqlSegment'     => 'log_visit.location_ip',
             'sqlFilter'      => array('Piwik_IP', 'P2N'),
-            'permission'     => Piwik::isUserHasAdminAccess($idSites),
+            'permission'     => $isAuthenticatedWithViewAccess,
         );
         $segments[] = array(
             'type'           => 'dimension',
@@ -287,6 +289,7 @@ class Piwik_API_API
             'acceptedValues' => '34c31e04394bdc63 - any 16 Hexadecimal chars ID, which can be fetched using the Tracking API function getVisitorId()',
             'sqlSegment'     => 'log_visit.idvisitor',
             'sqlFilter'      => array('Piwik_Common', 'convertVisitorIdToBin'),
+            'permission'     => $isAuthenticatedWithViewAccess,
         );
         $segments[] = array(
             'type'       => 'metric',
@@ -527,7 +530,7 @@ class Piwik_API_API
         $reportsMetadata = $this->getReportMetadata($idSite, $period, $date, $hideMetricsDoc, $showSubtableReports);
 
         foreach ($reportsMetadata as $report) {
-            // See ArchiveProcessing/Period.php - unique visitors are not processed for period != day
+            // See ArchiveProcessor/Period.php - unique visitors are not processed for period != day
             if (($period && $period != 'day') && !($apiModule == 'VisitsSummary' && $apiAction == 'get')) {
                 unset($report['metrics']['nb_uniq_visitors']);
             }
@@ -740,7 +743,7 @@ class Piwik_API_API
             /** @var Piwik_DataTable */
             $dataTable = $request->process();
         } catch (Exception $e) {
-            throw new Exception("API returned an error: " . $e->getMessage() . "\n");
+            throw new Exception("API returned an error: " . $e->getMessage() . " at " . basename($e->getFile()). ":" . $e->getLine() . "\n");
         }
 
         list($newReport, $columns, $rowsMetadata) = $this->handleTableReport($idSite, $dataTable, $reportMetadata, isset($reportMetadata['dimension']), $showRawMetrics);
@@ -1158,7 +1161,7 @@ class Piwik_API_API
             $period = 'day';
         }
 
-        if (!Piwik_Archive::isMultiplePeriod($date, $period)) {
+        if (!Piwik_Period::isMultiplePeriod($date, $period)) {
             throw new Exception("Row evolutions can not be processed with this combination of \'date\' and \'period\' parameters.");
         }
 
@@ -1350,7 +1353,7 @@ class Piwik_API_API
 
         // add "processed metrics" like actions per visit or bounce rate
         // note: some reports should not be filtered with AddColumnProcessedMetrics
-        // specifically, reports without the Piwik_Archive::INDEX_NB_VISITS metric such as Goals.getVisitsUntilConversion & Goal.getDaysToConversion
+        // specifically, reports without the Piwik_Metrics::INDEX_NB_VISITS metric such as Goals.getVisitsUntilConversion & Goal.getDaysToConversion
         // this is because the AddColumnProcessedMetrics filter removes all datable rows lacking this metric
         if
         (
