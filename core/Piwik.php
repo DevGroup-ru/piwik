@@ -106,14 +106,6 @@ class Piwik
     }
 
     /**
-     * Installation helper
-     */
-    static public function install()
-    {
-        Piwik_Common::mkdir(PIWIK_USER_PATH . '/' . Piwik_Config::getInstance()->smarty['compile_dir']);
-    }
-
-    /**
      * Uninstallation helper
      */
     static public function uninstall()
@@ -293,7 +285,7 @@ class Piwik
      */
     static public function copy($source, $dest, $excludePhp = false)
     {
-        static $phpExtensions = array('php', 'tpl');
+        static $phpExtensions = array('php', 'tpl', 'twig');
 
         if ($excludePhp) {
             $path_parts = pathinfo($source);
@@ -555,13 +547,14 @@ class Piwik
         // more selective allow/deny filters
         $allowAny = "<Files \"*\">\n" . $allow . "Satisfy any\n</Files>\n";
         $allowStaticAssets = "<Files ~ \"\\.(test\.php|gif|ico|jpg|png|svg|js|css|swf)$\">\n" . $allow . "Satisfy any\n</Files>\n";
-        $denyDirectPhp = "<Files ~ \"\\.(php|php4|php5|inc|tpl|in)$\">\n" . $deny . "</Files>\n";
+        $denyDirectPhp = "<Files ~ \"\\.(php|php4|php5|inc|tpl|in|twig)$\">\n" . $deny . "</Files>\n";
 
         $directoriesToProtect = array(
             '/js'      => $allowAny,
             '/libs'    => $denyDirectPhp . $allowStaticAssets,
+            '/vendor'    => $denyDirectPhp . $allowStaticAssets,
             '/plugins' => $denyDirectPhp . $allowStaticAssets,
-            '/themes'  => $denyDirectPhp . $allowStaticAssets,
+            '/misc/user'  => $denyDirectPhp . $allowStaticAssets,
         );
         foreach ($directoriesToProtect as $directoryToProtect => $content) {
             Piwik_Common::createHtAccess(PIWIK_INCLUDE_PATH . $directoryToProtect, $overwrite = true, $content);
@@ -589,6 +582,7 @@ class Piwik
         </hiddenSegments>
         <fileExtensions>
           <add fileExtension=".tpl" allowed="false" />
+          <add fileExtension=".twig" allowed="false" />
           <add fileExtension=".php4" allowed="false" />
           <add fileExtension=".php5" allowed="false" />
           <add fileExtension=".inc" allowed="false" />
@@ -609,6 +603,7 @@ class Piwik
         // deny direct access to .php files
         $directoriesToProtect = array(
             '/libs',
+            '/vendor',
             '/plugins',
         );
         foreach ($directoriesToProtect as $directoryToProtect) {
@@ -1057,7 +1052,7 @@ class Piwik
     {
         $output = "<style>a{color:red;}</style>\n" .
             "<div style='color:red;font-family:Georgia;font-size:120%'>" .
-            "<p><img src='themes/default/images/error_medium.png' style='vertical-align:middle; float:left;padding:20 20 20 20' />" .
+            "<p><img src='plugins/Zeitgeist/images/error_medium.png' style='vertical-align:middle; float:left;padding:20 20 20 20' />" .
             $message .
             "</p></div>";
         print(Piwik_Log_Formatter_ScreenFormatter::getFormattedString($output));
@@ -1497,7 +1492,7 @@ class Piwik
      */
     static public function getJavascriptCode($idSite, $piwikUrl)
     {
-        $jsCode = file_get_contents(PIWIK_INCLUDE_PATH . "/core/Tracker/javascriptCode.tpl");
+        $jsCode = file_get_contents(PIWIK_INCLUDE_PATH . "/plugins/Zeitgeist/templates/javascriptCode.tpl");
         $jsCode = htmlentities($jsCode);
         preg_match('~^(http|https)://(.*)$~D', $piwikUrl, $matches);
         $piwikUrl = @$matches[2];
@@ -1883,12 +1878,15 @@ class Piwik
      */
     static public function getArrayFromApiParameter($columns)
     {
-        return $columns === false
-            ? array()
-            : (is_array($columns)
-                ? $columns
-                : explode(',', $columns)
-            );
+        if(empty($columns)) {
+            return array();
+        }
+        if(is_array($columns)) {
+            return $columns;
+        }
+        $array = explode(',', $columns);
+        $array = array_unique($array);
+        return $array;
     }
 
     /**

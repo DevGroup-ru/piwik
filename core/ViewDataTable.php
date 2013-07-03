@@ -46,7 +46,7 @@ abstract class Piwik_ViewDataTable
      * Template file that will be loaded for this view.
      * Usually set in the Piwik_ViewDataTable_*
      *
-     * @var string eg. 'CoreHome/templates/cloud.tpl'
+     * @var string eg. 'CoreHome/templates/cloud.twig'
      */
     protected $dataTableTemplate = null;
 
@@ -66,7 +66,7 @@ abstract class Piwik_ViewDataTable
     protected $variablesDefault = array();
 
     /**
-     * Array of properties that are available in the view (from smarty)
+     * Array of properties that are available in the view
      * Used to store UI properties, eg. "show_footer", "show_search", etc.
      *
      * @var array
@@ -318,8 +318,8 @@ abstract class Piwik_ViewDataTable
         $this->viewProperties['tooltip_metadata_name'] = false;
 
         $standardColumnNameToTranslation = array_merge(
-            Piwik_API_API::getInstance()->getDefaultMetrics(),
-            Piwik_API_API::getInstance()->getDefaultProcessedMetrics()
+            Piwik_Metrics::getDefaultMetrics(),
+            Piwik_Metrics::getDefaultProcessedMetrics()
         );
         $this->setColumnsTranslations($standardColumnNameToTranslation);
     }
@@ -327,10 +327,10 @@ abstract class Piwik_ViewDataTable
     /**
      * Forces the View to use a given template.
      * Usually the template to use is set in the specific ViewDataTable_*
-     * eg. 'CoreHome/templates/cloud.tpl'
+     * eg. 'CoreHome/templates/cloud'
      * But some users may want to force this template to some other value
      *
-     * @param string $tpl eg .'MyPlugin/templates/templateToUse.tpl'
+     * @param string $tpl eg .'@MyPlugin/templateToUse'
      */
     public function setTemplate($tpl)
     {
@@ -899,7 +899,7 @@ abstract class Piwik_ViewDataTable
     }
 
     /**
-     * When this method is called, the output will not contain the template datatable_footer.tpl
+     * When this method is called, the output will not include the template datatable_footer
      */
     public function disableFooter()
     {

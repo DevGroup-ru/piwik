@@ -409,7 +409,7 @@ class Piwik_Goals extends Piwik_Plugin
     function getJsFiles($notification)
     {
         $jsFiles = & $notification->getNotificationObject();
-        $jsFiles[] = "plugins/Goals/templates/GoalForm.js";
+        $jsFiles[] = "plugins/Goals/javascripts/goalsForm.js";
     }
 
     /**
@@ -418,7 +418,7 @@ class Piwik_Goals extends Piwik_Plugin
     function getCssFiles($notification)
     {
         $cssFiles = & $notification->getNotificationObject();
-        $cssFiles[] = "plugins/Goals/templates/goals.css";
+        $cssFiles[] = "plugins/Goals/stylesheets/goals.css";
     }
 
     /**
