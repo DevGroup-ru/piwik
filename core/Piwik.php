@@ -2553,4 +2553,16 @@ class Piwik
         return false; // not NFS, or we can't run a program to find out
     }
 
+    /**
+     * Returns the option name of the option that stores the time the archive.php
+     * script was last run.
+     * 
+     * @param string $period
+     * @param string $idSite
+     * @return string
+     */
+    public static function getArchiveCronLastRunOptionName($period, $idSite)
+    {
+        return "lastRunArchive" . $period . "_" . $idSite;
+    }
 }

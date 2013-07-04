@@ -185,7 +185,7 @@ class Archiving
 
     private function lastRunKey($idsite, $period)
     {
-        return "lastRunArchive" . $period . "_" . $idsite;
+        return Piwik::getArchiveCronLastRunOptionName($period, $idsite);
     }
 
     /**
