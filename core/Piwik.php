@@ -36,6 +36,13 @@ class Piwik
         'year'  => 4,
         'range' => 5,
     );
+    
+    /**
+     * @see getKnownSegmentsToArchive
+     * 
+     * @var array
+     */
+    public static $cachedKnownSegmentsToArchive = null;
 
     const LABEL_ID_GOAL_IS_ECOMMERCE_CART = 'ecommerceAbandonedCart';
     const LABEL_ID_GOAL_IS_ECOMMERCE_ORDER = 'ecommerceOrder';
@@ -1544,18 +1551,16 @@ class Piwik
      */
     static public function getKnownSegmentsToArchive()
     {
-        static $cachedResult = null;
-
-        if (is_null($cachedResult)) {
+        if (self::$cachedKnownSegmentsToArchive === null) {
             $segments = Piwik_Config::getInstance()->Segments;
             $cachedResult = isset($segments['Segments']) ? $segments['Segments'] : array();
 
             Piwik_PostEvent('Piwik.getKnownSegmentsToArchiveAllSites', $cachedResult);
             
-            $cachedResult = array_unique($cachedResult);
+            self::$cachedKnownSegmentsToArchive = array_unique($cachedResult);
         }
 
-        return $cachedResult;
+        return self::$cachedKnownSegmentsToArchive;
     }
 
     static public function getKnownSegmentsToArchiveForSite($idSite)
